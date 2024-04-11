@@ -1,45 +1,20 @@
+import java.util.Arrays;
 
 public class Spline {
     public static Function<Double, Double> func(){
-        Function<Double, Double> res = (x) -> {return x*x*x + 7*x*x + 8*x;};
-        return res;
+        return (x) -> {return x*x*x + 7*x*x + 8*x;};
     }
-    public static Function<Double, Double> func1proizvodnaya(){
-        Function<Double, Double> res = (x) -> {return 3*x*x + 14*x + 8;};
-        return res;
+    public static Function<Double, Double> funcFirstDerivative(){
+        return (x) -> {return 3*x*x + 14*x + 8;};
     }
-    public static Function<Double, Double> func2proizvodnaya(){
-        Function<Double, Double> res = (x) -> {return 6*x + 14;};
-        return res;
-    }
-    public static double[] separition(double[] xValues) {
-        double[] xValuesNew = new double[xValues.length - 1];
-        for (int i = 0; i < xValuesNew.length; i++)
-        {
-            xValuesNew[i] = (xValues[i + 1] + xValues[i]) / 2;
-        }
-        return xValuesNew;
-    }
-    public static double[] partitioning(double a, double b, int n, int partition) {
-        double[] x = new double[n + 1];
-        if (partition == 0) {
-            for (int i = 0; i <= n; i++)//равномерное разбиение
-                x[i] = a + ((b - a) / n * i);
-            return x;
-        } else {
-            for (int i = 0; i <= n; i++)//разбиение Чебышева
-                x[i] = 0.5 * (a + b) + (b - a) * 0.5 * Math.cos(Math.PI * (n - i) / n);
-            return x;
-        }
-    }
-    public static Function<Double, Double> spline(){
-        Function<Double, Double> splin = (x) ->{
-            return x;
-        };
-        return splin;
+    public static Function<Double, Double> funcSecondDerivative(){
+        return (x) -> {return 6*x + 14;};
     }
 
-    public static void metodprog(int n, double[] h, double start, double end, double[] fValue){
+    public static double[] searchCoefficientC(Section section, double[] hValue, double[] fValue){
+        int n = section.getN();
+        double start = section.a;
+        double end = section.b;
         double[] x = new double[n];
         double[] a = new double[n];
         double[] b = new double[n];
@@ -48,16 +23,49 @@ public class Spline {
         double[] f = new double[n];
         double[] alpha = new double[n-1];
         double[] betta = new double[n];
-        f[0] = func1proizvodnaya().apply(start);
-        f[n-1] = func2proizvodnaya().apply(end);
+
+        f[0] = 6 * (fValue[1] - fValue[0] - funcFirstDerivative().apply(start));
+        f[n-1] = funcSecondDerivative().apply(end);
         for (int i = 1; i < n - 1; i++){
-            f[i] = 6*((fValue[i+1]-fValue[i])/h[i+1] - (fValue[i] - fValue[i-1])/h[i]);
+            f[i] = 6 * ((fValue[i+1] - fValue[i]) / hValue[i] - (fValue[i] - fValue[i-1]) / hValue[i-1]);
         }
-        b[0]=2;
-        for(int i = 0; i < n; i++){
-            b[i] =
+
+        //заполняем вектора диагональной матрицы(a,b,c)
+        b[0] = 2d;
+        c[0] = 1d;
+        for(int i = 1; i < n; i++){
+            if(i < n - 1){
+                b[i] =  2 * (hValue[i-1] + hValue[i]);
+                a[i] = hValue[i-1];
+                c[i] = hValue[i];
+            }
+            else {
+                a[0] = 0d;
+                a[n-1] = 0d;
+                b[i] = 1d;
+                c[n-1] = 0d;
+            }
         }
-        a[0] = c[3] = 0;
+
+        //прямой ход
+        y[0] = b[0];
+        alpha[0] = -c[0]/y[0];
+        betta[0] = f[0]/y[0];
+        for(int i = 1; i < n; i++){
+            y[i] = b[i] + a[i] * alpha[i-1];
+            if(i < n - 1)
+                alpha[i] = -c[i] / y[i];
+            betta[i] = (f[i] - a[i] * betta[i-1]) / y[i];
+        }
+
+        //обратный ход
+        x[n-1] = betta[n-1];
+        for(int i = n - 2; i >= 0; i--){
+            x[i] = alpha[i] * x[i+1] + betta[i];
+        }
+        return x;
+//        for(double val : x)
+//            System.out.println(val + " ");
 //        a[1] = 1;
 //        a[2] = 1;
 //        a[3] = 0;
@@ -90,6 +98,49 @@ public class Spline {
 //        for(double val : x)
 //        System.out.println(val + " ");
     }
+    public static double[][] searchAllCoefficients(Section section, double[] hValue, double[] fValue){
+        double[] c = searchCoefficientC(section, hValue, fValue);
+        double[][] all = new double[hValue.length][4];
+        for (int i = 1; i <= hValue.length; i++) {
+            all[i-1][0] = fValue[i];
+            all[i-1][1] = (fValue[i] - fValue[i-1]) / hValue[i-1] + (c[i] * hValue[i-1] / 3) + (c[i-1] * hValue[i-1] / 6);
+            all[i-1][2] = c[i];
+            all[i-1][3] = c[i] - c[i-1] / hValue[i-1];
+        }
+        return all;
+    }
+
+    public static Function<Double, Double> createCubicSpline(Section section, double h) {
+        double[] xValue = new double[section.n];
+        xValue[0] = section.a;
+        for (int i = 1; i < xValue.length; i++)
+        {
+            xValue[i] = xValue[i - 1] + h;
+        }
+
+        double[] hValue = new double[xValue.length - 1];
+        Arrays.fill(hValue, h);
+
+        double[] fValue = new double[section.n];
+        for (int i = 0; i < fValue.length; i++)
+        {
+            fValue[i] = func().apply(xValue[i]);
+        }
+
+        double[][] all = searchAllCoefficients(section, hValue, fValue);
+        return (x) ->{
+            int k = 0;
+            for (int i = 0; i < hValue.length; i++) {
+                if (x >= xValue[i] && x <= xValue[i + 1]){
+                    k = i;
+                    break;
+                }
+            }
+            return all[k][0] + all[k][1] * (x - xValue[k+1])
+                    +all[k][2] / 2 * Math.pow((x - xValue[k+1]), 2)
+                    + all[k][3] / 6 * Math.pow((x - xValue[k+1]), 3);
+        };
+    }
 
     public static void main(String[] args) {
 //        double a = 3;
@@ -100,6 +151,17 @@ public class Spline {
 //        for (int i = 0; i <= n; i++){
 //            yValue[i] = func().apply(xValue[i]);
 //        }
-        metodprog();
+        int n = 4;
+        double start = 1;
+        double end = 4;
+        Section section = new Section(start, end, n, 0);
+        double h = 1d;
+        Function<Double, Double> cubicSpline = createCubicSpline(section, h);
+        System.out.println("функция = " + func().apply(4.543)+ " сплайн = " + cubicSpline.apply(4.543));
+//        for (int i = 0; i < 3; i++) {
+//            for (int j = 0; j < 4; j++)
+//                System.out.print(all[i][j] + " ");
+//            System.out.println("\n");
+//        }
     }
 }
