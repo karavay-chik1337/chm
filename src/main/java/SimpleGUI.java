@@ -17,10 +17,9 @@ public class SimpleGUI extends JFrame {
     private static final int RENDER_QUALITY = 200;
 
     private static final JButton button = new JButton("Построить");
-    private static final JTextField inputA = new JTextField("3", 10);
-    private static final JTextField inputB = new JTextField("6", 10);
-    private static final JTextField inputN = new JTextField("4", 10);
-    private static final JTextField inputH = new JTextField("1", 10);
+    private static final JTextField inputA = new JTextField("1", 10);
+    private static final JTextField inputB = new JTextField("10", 10);
+    private static final JTextField inputN = new JTextField("100", 10);
     private static final JRadioButton inputSeparation1 = new JRadioButton("Равномерное");
     private static final JRadioButton inputSeparation2 = new JRadioButton("Чебышев");
     private static final JRadioButton inputMethod1 = new JRadioButton("Полином Лагранжа");
@@ -32,8 +31,6 @@ public class SimpleGUI extends JFrame {
     private static final JLabel labelN = new JLabel("Количество разбиений(n): ");
     private static final JLabel labelSeparation = new JLabel("Вид разбиения: ");
     private static final JLabel labelMethod = new JLabel("Метод интерполирования: ");
-
-    private static final JLabel labelH = new JLabel("Разность подотрезков(h): ");
 
     private static final JLabel text = new JLabel("");
 
@@ -62,8 +59,6 @@ public class SimpleGUI extends JFrame {
         container.add(inputB);
         container.add(labelN);
         container.add(inputN);
-        container.add(labelH);
-        container.add(inputH);
         container.add(labelSeparation);
         container.add(text);
         container.add(inputSeparation1);
@@ -82,7 +77,7 @@ public class SimpleGUI extends JFrame {
                     );
                     Function<Double, Double> function = inputMethod1.isSelected() ? Lagrange.func() : Spline.func();
                     Function<Double, Double> interpol = inputMethod1.isSelected() ? Lagrange.createLagrangePolynomial(section)
-                            : Spline.createCubicSpline(section, Double.parseDouble(inputH.getText()));
+                            : Spline.createCubicSpline(section);
 
                     this.graphType = inputMethod1.isSelected() ? inputMethod1.getText() : inputMethod2.getText();
                     JFreeChart[] graphs = createGraphs(section, function, interpol);
@@ -115,8 +110,7 @@ public class SimpleGUI extends JFrame {
         XYSeries sourceFunction = new XYSeries("f(x)");
         XYSeries interpolatedFunction = new XYSeries("interpolated_func(x)");
         XYSeries error = new XYSeries("accuracy(x)");
-        double[] x = section.partitioning();
-        double[] xValues = section.separation(x);
+        double[] xValues = section.separation(section.xGenerate());
         var maxFYAxis = Double.MIN_VALUE;
         var minFYAxis = Double.MAX_VALUE;
         for (double xValue : xValues) {
