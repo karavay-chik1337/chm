@@ -2,54 +2,84 @@ import static java.lang.Math.abs;
 
 public class Main {
     public static void main(String[] args) {
+        //графики
         SimpleGUI simpleGUI = new SimpleGUI();
         simpleGUI.setVisible(true);
-
-
-        int n = 50;
-        boolean flag = true;
+        //погрешность для разных n и разбиений
+        int n = 5;
+        double delta;
         double maxForCheb = 0;
         double maxForRavnom = 0;
-        System.out.println("Кол-во отрезков\t" + "\tРавномерное разбиение\t" + "\t\t\tРазбиение Чебышева");
-        for (int j = 0; j < 3; j++) {
-            Section section = new Section(1, 10, n);
-            for (int k = 0; k < 2; k++) {
-                if (flag) {
-                    Function<Double, Double> lagrange = Lagrange.createLagrangePolynomial(section, k);
-                    double[] xValues = section.separation(section.partitioning(k));
-                    double[] yValues = new double[xValues.length];
-                    for (int i = 0; i < xValues.length; i++) {
-                        yValues[i] = Lagrange.func().apply(xValues[i]);
-                    }
+        System.out.println("Для полинома Лагража");
+        for (int j = 0; j < 15; j++) {
+            Section section = new Section(1, 10, n, 0);
+            Function<Double, Double> lagrange = Lagrange.createLagrangePolynomial(section);
+            double[] xValues = section.separation(section.xGenerate());
+            double[] yValues = new double[xValues.length];
+            for (int i = 0; i < xValues.length; i++) {
+                yValues[i] = Lagrange.func().apply(xValues[i]);
+            }
 
-                    for (int i = 0; i < n; i++) {
-                        double delta = abs(yValues[i] - lagrange.apply(xValues[i]));
-                        //System.out.println("delta = " + delta);
-                        if (delta > maxForCheb)
-                            maxForRavnom = delta;
-                    }
-                    flag = false;
-                }
-                else{
-                    Function<Double, Double> lagrange = Lagrange.createLagrangePolynomial(section, k);
-                    double[] xValues = section.separation(section.partitioning(k));
-                    double[] yValues = new double[xValues.length];
-                    for (int i = 0; i < xValues.length; i++) {
-                        yValues[i] = Lagrange.func().apply(xValues[i]);
-                    }
-
-                    for (int i = 0; i < n; i++) {
-                        double delta = abs(yValues[i] - lagrange.apply(xValues[i]));
-                        if (delta > maxForCheb)
-                            maxForCheb = delta;
-                    }
+            for (int i = 0; i < yValues.length; i++) {
+                delta = abs(yValues[i] - lagrange.apply(xValues[i]));
+                if (delta > maxForCheb) {
+                    maxForRavnom = delta;
                 }
             }
-            System.out.println("n = " + n + "\t\t\t\t\t" + maxForRavnom + "\t\t\t" + maxForCheb);
+            section.setPartition(1);
+            lagrange = Lagrange.createLagrangePolynomial(section);
+            xValues = section.separation(section.xGenerate());
+            for (int i = 0; i < xValues.length; i++) {
+                yValues[i] = Lagrange.func().apply(xValues[i]);
+            }
 
-            n += 10;
+            for (int i = 0; i < yValues.length; i++) {
+                delta = abs(yValues[i] - lagrange.apply(xValues[i]));
+                if (delta > maxForCheb)
+                    maxForCheb = delta;
+            }
+            System.out.println("n = " + section.getN() + "\tравномерное = " + maxForRavnom + "\t чебышев = " + maxForCheb);
+
+            n += 5;
+            maxForCheb = 0;
+            maxForRavnom = 0;
+        }
+
+        n = 4;
+        System.out.println("\nКубический сплайн");
+        for (int j = 0; j < 10; j++) {
+            Section section = new Section(1, 10, n, 0);
+            Function<Double, Double> spline = Spline.createCubicSpline(section);
+            double[] xValues = section.separation(section.xGenerate());
+            double[] yValues = new double[xValues.length];
+            for (int i = 0; i < xValues.length; i++) {
+                yValues[i] = Spline.func().apply(xValues[i]);
+            }
+
+            for (int i = 0; i < yValues.length; i++) {
+                delta = abs(yValues[i] - spline.apply(xValues[i]));
+                if (delta > maxForCheb) {
+                    maxForRavnom = delta;
+                }
+            }
+            section.setPartition(1);
+            spline = Spline.createCubicSpline(section);
+            xValues = section.separation(section.xGenerate());
+            for (int i = 0; i < xValues.length; i++) {
+                yValues[i] = Spline.func().apply(xValues[i]);
+            }
+
+            for (int i = 0; i < yValues.length; i++) {
+                delta = abs(yValues[i] - spline.apply(xValues[i]));
+                if (delta > maxForCheb)
+                    maxForCheb = delta;
+            }
+            System.out.println("n = " + section.getN() + "\tравномерное = " + maxForRavnom + "\t\t\t чебышев = " + maxForCheb);
+            n *= 2;
             maxForCheb = 0;
             maxForRavnom = 0;
         }
     }
 }
+
+
