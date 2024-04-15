@@ -11,7 +11,7 @@ public class Main {
         double maxForCheb = 0;
         double maxForRavnom = 0;
         System.out.println("Для полинома Лагража");
-        for (int j = 0; j < 15; j++) {
+        for (int j = 0; j < 10; j++) {
             Section section = new Section(1, 10, n, 0);
             Function<Double, Double> lagrange = Lagrange.createLagrangePolynomial(section);
             double[] xValues = section.separation(section.xGenerate());
@@ -45,9 +45,9 @@ public class Main {
             maxForRavnom = 0;
         }
 
-        n = 4;
+        n = 2;
         System.out.println("\nКубический сплайн");
-        for (int j = 0; j < 10; j++) {
+        for (int j = 0; j < 12; j++) {
             Section section = new Section(1, 10, n, 0);
             Function<Double, Double> spline = Spline.createCubicSpline(section);
             double[] xValues = section.separation(section.xGenerate());
@@ -58,11 +58,12 @@ public class Main {
 
             for (int i = 0; i < yValues.length; i++) {
                 delta = abs(yValues[i] - spline.apply(xValues[i]));
-                if (delta > maxForCheb) {
+                if (delta > maxForRavnom) {
                     maxForRavnom = delta;
                 }
             }
             section.setPartition(1);
+            section.xGenerate();
             spline = Spline.createCubicSpline(section);
             xValues = section.separation(section.xGenerate());
             for (int i = 0; i < xValues.length; i++) {

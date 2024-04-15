@@ -3,17 +3,20 @@ import java.util.Arrays;
 public class Spline {
     public static Function<Double, Double> func() {
         return (x) -> {
-            return x*x*x + 7*x*x + 8*x;
+            //return x*x*x + 7*x*x + 8*x;
+            return Math.sin(x);
         };
     }
     public static Function<Double, Double> funcFirstDerivative() {
         return (x) -> {
-            return 3*x*x + 14*x;
+            //return 3*x*x + 14*x + 8;
+            return Math.cos(x);
         };
     }
     public static Function<Double, Double> funcSecondDerivative() {
         return (x) -> {
-            return 6*x + 14;
+            return -1d * Math.sin(x);
+            //return 6*x + 14d;
         };
     }
 
@@ -28,7 +31,7 @@ public class Spline {
         double[] alpha = new double[n - 1];
         double[] betta = new double[n];
         double h = section.h;
-        f[0] = 6 * (fValue[1] - fValue[0] - funcFirstDerivative().apply(section.a));
+        f[0] = 6d/h * ((fValue[1] - fValue[0])/h - funcFirstDerivative().apply(section.a));
         f[n - 1] = funcSecondDerivative().apply(section.b);
         for (int i = 1; i < n - 1; i++) {
             f[i] = 6 * ((fValue[i + 1] - fValue[i]) / h - (fValue[i] - fValue[i - 1]) / h);
@@ -39,7 +42,7 @@ public class Spline {
         c[0] = 1d;
         for (int i = 1; i < n; i++) {
             if (i < n - 1) {
-                b[i] = 2 * (h + h);
+                b[i] = 4 * h;
                 a[i] = h;
                 c[i] = h;
             } else {
@@ -119,7 +122,6 @@ public class Spline {
         for (int i = 0; i < fValue.length; i++) {
             fValue[i] = func().apply(xValue[i]);
         }
-
         double[][] all = searchAllCoefficients(section, fValue);
 //        for (int i = 0; i < section.n-1; i++) {
 //            for (int j = 0; j < 4; j++)
@@ -136,8 +138,8 @@ public class Spline {
             }
             double dif = x - xValue[k + 1];
             return all[k][0] + all[k][1] * (dif)
-                    + all[k][2] / 2 * Math.pow(dif, 2)
-                    + all[k][3] / 6 * Math.pow(dif, 3);
+                    + all[k][2] / 2d * Math.pow(dif, 2)
+                    + all[k][3] / 6d * Math.pow(dif, 3);
         };
     }
 }

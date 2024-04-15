@@ -5,7 +5,8 @@ import java.util.List;
 public class Lagrange {
     public static Function<Double, Double> func() {
         return (x) -> {
-            return x * x * x + x * x + x;
+            return Math.cos(x);
+            //return x * x * x + x * x + x;
         };
     }
     public static Function<Double, Double> createBasicPolynomial(double[] xValues, int i) {
