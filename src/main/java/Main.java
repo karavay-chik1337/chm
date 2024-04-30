@@ -11,8 +11,8 @@ public class Main {
         double maxForCheb = 0;
         double maxForRavnom = 0;
         System.out.println("Для полинома Лагража");
-        for (int j = 0; j < 10; j++) {
-            Section section = new Section(1, 10, n, 0);
+        for (int j = 0; j < 13; j++) {
+            Section section = new Section(-10, 10, n, 0);
             Function<Double, Double> lagrange = Lagrange.createLagrangePolynomial(section);
             double[] xValues = section.separation(section.xGenerate());
             double[] yValues = new double[xValues.length];

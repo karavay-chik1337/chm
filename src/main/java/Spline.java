@@ -3,20 +3,31 @@ import java.util.Arrays;
 public class Spline {
     public static Function<Double, Double> func() {
         return (x) -> {
-            //return x*x*x + 7*x*x + 8*x;
-            return Math.sin(x);
+            return x * x * x + 7 * x * x + 8 * x;
+            //return Math.sin(x);
+            //return Math.abs(x);
         };
     }
+
     public static Function<Double, Double> funcFirstDerivative() {
         return (x) -> {
-            //return 3*x*x + 14*x + 8;
-            return Math.cos(x);
+//            if(x>0)
+//                return 1d;
+//            else {
+//                if (x < 0)
+//                    return -1d;
+//                else return null;
+//            }
+            return 3*x*x + 14*x + 8d;
+            //return Math.cos(x);
         };
     }
+
     public static Function<Double, Double> funcSecondDerivative() {
         return (x) -> {
-            return -1d * Math.sin(x);
-            //return 6*x + 14d;
+            //return 0d;
+            return 6 * x + 14;
+            //return -1d * Math.sin(x);
         };
     }
 
@@ -31,7 +42,7 @@ public class Spline {
         double[] alpha = new double[n - 1];
         double[] betta = new double[n];
         double h = section.h;
-        f[0] = 6d/h * ((fValue[1] - fValue[0])/h - funcFirstDerivative().apply(section.a));
+        f[0] = 6d / h * ((fValue[1] - fValue[0]) / h - funcFirstDerivative().apply(section.a));
         f[n - 1] = funcSecondDerivative().apply(section.b);
         for (int i = 1; i < n - 1; i++) {
             f[i] = 6 * ((fValue[i + 1] - fValue[i]) / h - (fValue[i] - fValue[i - 1]) / h);
@@ -104,6 +115,7 @@ public class Spline {
 //        for(double val : x)
 //        System.out.println(val + " ");
     }
+
     public static double[][] searchAllCoefficients(Section section, double[] fValue) {
         double[] c = searchCoefficientC(section, fValue);
         double h = section.h;
@@ -116,6 +128,7 @@ public class Spline {
         }
         return all;
     }
+
     public static Function<Double, Double> createCubicSpline(Section section) {
         double[] xValue = section.xGenerate();
         double[] fValue = new double[section.n + 1];

@@ -17,7 +17,7 @@ public class SimpleGUI extends JFrame {
     private static final int RENDER_QUALITY = 200;
 
     private static final JButton button = new JButton("Построить");
-    private static final JTextField inputA = new JTextField("1", 10);
+    private static final JTextField inputA = new JTextField("-10", 10);
     private static final JTextField inputB = new JTextField("10", 10);
     private static final JTextField inputN = new JTextField("100", 10);
     private static final JRadioButton inputSeparation1 = new JRadioButton("Равномерное");
